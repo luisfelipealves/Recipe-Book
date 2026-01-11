@@ -21,7 +21,7 @@ export const recipeService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    
+
     return data.map((r: any) => ({
       ...r,
       tags: r.recipe_tags.map((rt: any) => rt.tags)
@@ -29,9 +29,63 @@ export const recipeService = {
   },
 
   async getTags() {
-    const { data, error } = await supabase.from('tags').select('*');
+    // Get tags and their recipe usage count
+    const { data: tags, error } = await supabase
+      .from('tags')
+      .select('*')
+      .order('name');
+
     if (error) throw error;
-    return data as Tag[];
+
+    // Get counts
+    const { data: recipeTags, error: countError } = await supabase
+      .from('recipe_tags')
+      .select('tag_id');
+
+    if (countError) throw countError;
+
+    // Calculate counts locally since Supabase simpler for now
+    const counts: Record<string, number> = {};
+    recipeTags?.forEach((rt: any) => {
+      counts[rt.tag_id] = (counts[rt.tag_id] || 0) + 1;
+    });
+
+    return tags.map((t: any) => ({
+      ...t,
+      recipe_count: counts[t.id] || 0
+    })) as Tag[];
+  },
+
+  async createTag(tag: Omit<Tag, 'id' | 'recipe_count'>) {
+    const { data, error } = await supabase
+      .from('tags')
+      .insert([tag])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTag(id: string, tag: Partial<Tag>) {
+    const { data, error } = await supabase
+      .from('tags')
+      .update(tag)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteTag(id: string) {
+    const { error } = await supabase
+      .from('tags')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
   async createRecipe(recipe: Partial<Recipe>, ingredients: Ingredient[], steps: Step[], tagIds: string[]) {

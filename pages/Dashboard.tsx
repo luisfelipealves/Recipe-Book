@@ -69,13 +69,22 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => navigate('/new')}
-          className="mt-auto w-full h-12 bg-primary text-white rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-colors"
-        >
-          <span className="material-symbols-outlined">add</span>
-          New Recipe
-        </button>
+        <div className="flex flex-col gap-2 mt-auto">
+          <button
+            onClick={() => navigate('/tags')}
+            className="w-full h-12 bg-gray-50 text-text-dark rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-gray-100 transition-colors"
+          >
+            <span className="material-symbols-outlined">label</span>
+            Manage Tags
+          </button>
+          <button
+            onClick={() => navigate('/new')}
+            className="w-full h-12 bg-primary text-white rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-colors"
+          >
+            <span className="material-symbols-outlined">add</span>
+            New Recipe
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -87,8 +96,16 @@ export const Dashboard: React.FC = () => {
             <h1 className="hidden lg:block text-3xl font-bold text-text-dark">
               {activeTag ? tags.find(t => t.id === activeTag)?.name : 'All Recipes'}
             </h1>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary cursor-pointer hover:bg-primary/20 transition-colors">
-              <span className="material-symbols-outlined">person</span>
+            <div className="flex items-center gap-3">
+              <div
+                onClick={() => navigate('/tags')}
+                className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100 transition-colors lg:hidden"
+              >
+                <span className="material-symbols-outlined">label</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary cursor-pointer hover:bg-primary/20 transition-colors">
+                <span className="material-symbols-outlined">person</span>
+              </div>
             </div>
           </div>
 

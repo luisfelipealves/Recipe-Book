@@ -3,6 +3,7 @@ export interface Tag {
   id: string;
   name: string;
   color: string;
+  recipe_count?: number;
 }
 
 export interface Ingredient {
