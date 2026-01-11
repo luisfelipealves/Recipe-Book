@@ -8,17 +8,17 @@ interface RecipeCardProps {
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-      <div className="aspect-[4/3] relative overflow-hidden bg-gray-100">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group">
+      <div className="aspect-video sm:aspect-[4/3] lg:aspect-square relative overflow-hidden bg-gray-100">
         {recipe.image_url ? (
-          <img 
-            src={recipe.image_url} 
-            alt={recipe.title} 
-            className="w-full h-full object-cover"
+          <img
+            src={recipe.image_url}
+            alt={recipe.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
-             <span className="material-symbols-outlined text-4xl">restaurant</span>
+            <span className="material-symbols-outlined text-4xl">restaurant</span>
           </div>
         )}
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
@@ -29,8 +29,8 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
       <div className="p-4">
         <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar">
           {recipe.tags?.map(tag => (
-            <span 
-              key={tag.id} 
+            <span
+              key={tag.id}
               className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: `${tag.color}20`, color: tag.color }}
             >
