@@ -1,9 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { recipeService } from '../services/supabase';
 import { Recipe, Tag } from '../types';
 import { RecipeCard } from '../components/RecipeCard';
+import { UserMenu } from '../components/UserMenu';
 
 export const Dashboard: React.FC = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -11,6 +13,8 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [onlyMyRecipes, setOnlyMyRecipes] = useState(false);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +38,8 @@ export const Dashboard: React.FC = () => {
   const filteredRecipes = recipes.filter(r => {
     const matchesSearch = r.title.toLowerCase().includes(search.toLowerCase());
     const matchesTag = !activeTag || r.tags?.some(t => t.id === activeTag);
-    return matchesSearch && matchesTag;
+    const matchesUser = !onlyMyRecipes || r.user_id === user?.id;
+    return matchesSearch && matchesTag && matchesUser;
   });
 
   return (
@@ -77,6 +82,15 @@ export const Dashboard: React.FC = () => {
             <span className="material-symbols-outlined">label</span>
             Manage Tags
           </button>
+          {user && (
+            <button
+              onClick={() => setOnlyMyRecipes(!onlyMyRecipes)}
+              className={`w-full h-12 rounded-xl flex items-center justify-center gap-2 font-bold transition-all ${onlyMyRecipes ? 'bg-primary/10 text-primary border-2 border-primary/20' : 'bg-gray-50 text-text-dark hover:bg-gray-100'}`}
+            >
+              <span className="material-symbols-outlined">{onlyMyRecipes ? 'person' : 'group'}</span>
+              {onlyMyRecipes ? 'My Recipes' : 'All Community'}
+            </button>
+          )}
           <button
             onClick={() => navigate('/new')}
             className="w-full h-12 bg-primary text-white rounded-xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark transition-colors"
@@ -103,9 +117,7 @@ export const Dashboard: React.FC = () => {
               >
                 <span className="material-symbols-outlined">label</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary cursor-pointer hover:bg-primary/20 transition-colors">
-                <span className="material-symbols-outlined">person</span>
-              </div>
+              <UserMenu />
             </div>
           </div>
 

@@ -137,9 +137,15 @@ export const recipeService = {
 
   async createRecipe(recipe: Partial<Recipe>, recipe_ingredients: Ingredient[], recipe_steps: Step[], tagIds: string[]) {
     // 1. Insert Recipe
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Authenticated user required to create recipe");
+
     const { data: recipeData, error: recipeError } = await supabase
       .from('recipes')
-      .insert([recipe])
+      .insert([{
+        ...recipe,
+        user_id: user.id
+      }])
       .select()
       .single();
 
