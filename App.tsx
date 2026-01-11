@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { NewRecipe } from './pages/NewRecipe';
 import { ManageTags } from './pages/ManageTags';
+import { RecipeDetail } from './pages/RecipeDetail';
 
 const App: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/new" element={<NewRecipe />} />
           <Route path="/tags" element={<ManageTags />} />
+          <Route path="/recipe/:id" element={<RecipeDetail />} />
         </Routes>
       </Layout>
     </Router>

@@ -11,7 +11,7 @@ export const NewRecipe: React.FC = () => {
 
   // Form State
   const [title, setTitle] = useState('');
-  const [prepTime, setPrepTime] = useState<number>(20);
+  const [prep_time_minutes, setPrepTimeMinutes] = useState<number>(20);
   const [servings, setServings] = useState<number>(4);
   const [imageUrl, setImageUrl] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -19,10 +19,10 @@ export const NewRecipe: React.FC = () => {
 
   // Dynamic Lists State
   const [ingredients, setIngredients] = useState<Ingredient[]>([
-    { name: '', quantity: '', unit: 'unidade', order_index: 0 }
+    { name: '', quantity: '', unit: 'unidade', order: 0 }
   ]);
   const [steps, setSteps] = useState<Step[]>([
-    { description: '', order_index: 0 }
+    { description: '', order: 0 }
   ]);
 
   useEffect(() => {
@@ -54,21 +54,20 @@ export const NewRecipe: React.FC = () => {
       // Re-index before saving to ensure sequential order
       const finalIngredients = validIngredients.map((ing, idx) => ({
         ...ing,
-        order_index: idx
+        order: idx
       }));
 
       const finalSteps = validSteps.map((step, idx) => ({
         ...step,
-        order_index: idx
+        order: idx
       }));
 
       await recipeService.createRecipe(
         {
           title,
-          prep_time_mins: prepTime,
+          prep_time_minutes,
           servings,
-          image_url: imageUrl || 'https://picsum.photos/800/600?random=' + Math.random(),
-          rating: 4.5
+          image_url: imageUrl || 'https://picsum.photos/800/600?random=' + Math.random()
         },
         finalIngredients,
         finalSteps,
@@ -98,7 +97,7 @@ export const NewRecipe: React.FC = () => {
   };
 
   const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', quantity: '', unit: 'unidade', order_index: ingredients.length }]);
+    setIngredients([...ingredients, { name: '', quantity: '', unit: 'unidade', order: ingredients.length }]);
   };
 
   const removeIngredient = (index: number) => {
@@ -106,7 +105,7 @@ export const NewRecipe: React.FC = () => {
       setIngredients(ingredients.filter((_, i) => i !== index));
     } else {
       // If deleting the last one, just clear it
-      setIngredients([{ name: '', quantity: '', unit: 'unidade', order_index: 0 }]);
+      setIngredients([{ name: '', quantity: '', unit: 'unidade', order: 0 }]);
     }
   };
 
@@ -118,14 +117,14 @@ export const NewRecipe: React.FC = () => {
   };
 
   const addStep = () => {
-    setSteps([...steps, { description: '', order_index: steps.length }]);
+    setSteps([...steps, { description: '', order: steps.length }]);
   };
 
   const removeStep = (index: number) => {
     if (steps.length > 1) {
       setSteps(steps.filter((_, i) => i !== index));
     } else {
-      setSteps([{ description: '', order_index: 0 }]);
+      setSteps([{ description: '', order: 0 }]);
     }
   };
 
@@ -190,8 +189,8 @@ export const NewRecipe: React.FC = () => {
                     <input
                       type="number"
                       className="w-full h-12 pl-12 rounded-xl border-gray-200 focus:ring-primary/20 focus:border-primary"
-                      value={prepTime}
-                      onChange={(e) => setPrepTime(Number(e.target.value))}
+                      value={prep_time_minutes}
+                      onChange={(e) => setPrepTimeMinutes(Number(e.target.value))}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium pointer-events-none">min</span>
                   </div>

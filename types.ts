@@ -12,23 +12,22 @@ export interface Ingredient {
   name: string;
   quantity: string;
   unit: string;
-  order_index: number;
+  order: number;
 }
 
 export interface Step {
   id?: string;
   recipe_id?: string;
   description: string;
-  order_index: number;
+  order: number;
 }
 
 export interface Recipe {
   id: string;
   title: string;
   image_url: string;
-  prep_time_mins: number;
+  prep_time_minutes: number;
   servings: number;
-  rating: number;
   created_at: string;
   user_id?: string;
   tags?: Tag[];
@@ -36,4 +35,4 @@ export interface Recipe {
   steps?: Step[];
 }
 
-export type NewRecipe = Omit<Recipe, 'id' | 'created_at' | 'tags' | 'ingredients' | 'steps'>;
+export type NewRecipe = Omit<Recipe, 'id' | 'created_at' | 'tags' | 'ingredients' | 'steps' | 'prep_time_minutes'> & { prep_time_minutes: number };

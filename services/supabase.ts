@@ -28,6 +28,53 @@ export const recipeService = {
     })) as Recipe[];
   },
 
+  async getRecipeById(id: string) {
+    // 1. Fetch Main Recipe + Tags
+    const { data: recipe, error: recipeError } = await supabase
+      .from('recipes')
+      .select(`
+        *,
+        recipe_tags (
+          tags (id, name, color)
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (recipeError) throw recipeError;
+
+    // 2. Fetch Ingredients
+    const { data: ingredients, error: ingError } = await supabase
+      .from('recipe_ingredients')
+      .select('*')
+      .eq('recipe_id', id)
+      .order('order');
+
+    if (ingError) throw ingError;
+
+    // 3. Fetch Steps
+    const { data: steps, error: stepError } = await supabase
+      .from('recipe_steps')
+      .select('*')
+      .eq('recipe_id', id)
+      .order('order');
+
+    if (stepError) throw stepError;
+
+    return {
+      ...recipe,
+      tags: recipe.recipe_tags.map((rt: any) => rt.tags),
+      ingredients: (ingredients || []).map((ing: any) => ({
+        ...ing,
+        name: ing.text // Map database 'text' to frontend 'name'
+      })),
+      steps: (steps || []).map((step: any) => ({
+        ...step,
+        description: step.text // Map database 'text' to frontend 'description'
+      }))
+    } as Recipe;
+  },
+
   async getTags() {
     // Get tags and their recipe usage count
     const { data: tags, error } = await supabase
@@ -88,7 +135,7 @@ export const recipeService = {
     if (error) throw error;
   },
 
-  async createRecipe(recipe: Partial<Recipe>, ingredients: Ingredient[], steps: Step[], tagIds: string[]) {
+  async createRecipe(recipe: Partial<Recipe>, recipe_ingredients: Ingredient[], recipe_steps: Step[], tagIds: string[]) {
     // 1. Insert Recipe
     const { data: recipeData, error: recipeError } = await supabase
       .from('recipes')
@@ -100,24 +147,28 @@ export const recipeService = {
     const recipeId = recipeData.id;
 
     // 2. Insert Ingredients
-    if (ingredients.length > 0) {
-      const ingredientsToInsert = ingredients.map((ing, idx) => ({
-        ...ing,
+    if (recipe_ingredients.length > 0) {
+      const ingredientsToInsert = recipe_ingredients.map((ing, idx) => ({
+        // Assuming database uses 'name' or 'description' as 'text' field. 
+        // Based on agent: "recipe_ingredients uses a single 'text' column for description"
+        // Let's use 'name' if it's there, but wait, I should probably join them for safety.
+        // Actually, I'll use the 'name' field for now but if it's 'text', I'll map it.
+        text: `${ing.quantity} ${ing.unit} ${ing.name}`.trim(),
         recipe_id: recipeId,
-        order_index: idx
+        order: idx
       }));
-      const { error: ingError } = await supabase.from('ingredients').insert(ingredientsToInsert);
+      const { error: ingError } = await supabase.from('recipe_ingredients').insert(ingredientsToInsert);
       if (ingError) throw ingError;
     }
 
     // 3. Insert Steps
-    if (steps.length > 0) {
-      const stepsToInsert = steps.map((step, idx) => ({
-        ...step,
+    if (recipe_steps.length > 0) {
+      const stepsToInsert = recipe_steps.map((step, idx) => ({
+        text: step.description,
         recipe_id: recipeId,
-        order_index: idx
+        order: idx
       }));
-      const { error: stepError } = await supabase.from('steps').insert(stepsToInsert);
+      const { error: stepError } = await supabase.from('recipe_steps').insert(stepsToInsert);
       if (stepError) throw stepError;
     }
 
