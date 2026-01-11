@@ -24,6 +24,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
             src={recipe.image_url}
             alt={recipe.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { recipeService } from '../services/supabase';
 import { Tag, Ingredient, Step } from '../types';
+import { ImageUpload } from '../components/ImageUpload';
 
 export const NewRecipe: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export const NewRecipe: React.FC = () => {
   const [servings, setServings] = useState<number>(4);
   const [imageUrl, setImageUrl] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Dynamic Lists State
@@ -71,7 +73,8 @@ export const NewRecipe: React.FC = () => {
         },
         finalIngredients,
         finalSteps,
-        selectedTagIds
+        selectedTagIds,
+        imageFile
       );
 
       navigate('/');
@@ -160,22 +163,13 @@ export const NewRecipe: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Left Column: Media & Basic Info */}
           <div className="lg:col-span-1 space-y-8">
-            {/* Cover Photo Placeholder */}
-            <div
-              onClick={() => {
-                const url = prompt('Enter image URL:');
-                if (url) setImageUrl(url);
-              }}
-              className="aspect-video w-full rounded-2xl border-2 border-dashed border-gray-100 bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors group relative overflow-hidden"
-            >
-              {imageUrl ? (
-                <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-4xl text-gray-300 group-hover:text-primary transition-colors">add_a_photo</span>
-                  <p className="text-sm font-medium text-gray-400 mt-2">Add a cover photo</p>
-                </>
-              )}
+            {/* Cover Photo */}
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-gray-400 mb-4">Cover Image</h3>
+              <ImageUpload
+                onImageSelected={setImageFile}
+                currentImageUrl={imageUrl}
+              />
             </div>
 
             {/* Basic Info */}

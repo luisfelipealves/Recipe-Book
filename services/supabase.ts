@@ -8,6 +8,34 @@ const SUPABASE_KEY = 'sb_publishable_8YKw66mDFBAdOyBniD_E0w_cluwFbjv';
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export const recipeService = {
+  async uploadRecipeImage(file: File, userId: string, recipeId: string) {
+    const filePath = `user-${userId}/recipe-${recipeId}/cover.webp`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('recipe-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('recipe-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  },
+
+  async deleteRecipeImage(userId: string, recipeId: string) {
+    const filePath = `user-${userId}/recipe-${recipeId}/cover.webp`;
+    const { error } = await supabase.storage
+      .from('recipe-images')
+      .remove([filePath]);
+
+    if (error) console.error("Error deleting image from storage:", error);
+  },
+
   async getAllRecipes() {
     const { data, error } = await supabase
       .from('recipes')
@@ -126,6 +154,26 @@ export const recipeService = {
     return data;
   },
 
+  async deleteRecipe(id: string) {
+    // Get recipe to check for image
+    const { data: recipe } = await supabase
+      .from('recipes')
+      .select('user_id, image_url')
+      .eq('id', id)
+      .single();
+
+    if (recipe?.image_url && recipe.image_url.includes('recipe-images')) {
+      await this.deleteRecipeImage(recipe.user_id, id);
+    }
+
+    const { error } = await supabase
+      .from('recipes')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
   async deleteTag(id: string) {
     const { error } = await supabase
       .from('tags')
@@ -135,11 +183,12 @@ export const recipeService = {
     if (error) throw error;
   },
 
-  async createRecipe(recipe: Partial<Recipe>, recipe_ingredients: Ingredient[], recipe_steps: Step[], tagIds: string[]) {
-    // 1. Insert Recipe
+  async createRecipe(recipe: Partial<Recipe>, recipe_ingredients: Ingredient[], recipe_steps: Step[], tagIds: string[], imageFile?: File | null) {
+    // 1. Get user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Authenticated user required to create recipe");
 
+    // 2. Insert Recipe Placeholder (to get ID)
     const { data: recipeData, error: recipeError } = await supabase
       .from('recipes')
       .insert([{
@@ -151,6 +200,19 @@ export const recipeService = {
 
     if (recipeError) throw recipeError;
     const recipeId = recipeData.id;
+
+    // 3. Handle Image Upload if file provided
+    let finalImageUrl = recipe.image_url;
+    if (imageFile) {
+      try {
+        finalImageUrl = await this.uploadRecipeImage(imageFile, user.id, recipeId);
+        // Update recipe with the final public URL
+        await supabase.from('recipes').update({ image_url: finalImageUrl }).eq('id', recipeId);
+        recipeData.image_url = finalImageUrl;
+      } catch (uploadError) {
+        console.error("Image upload failed, but recipe created:", uploadError);
+      }
+    }
 
     // 2. Insert Ingredients
     if (recipe_ingredients.length > 0) {
