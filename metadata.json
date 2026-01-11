@@ -1,0 +1,7 @@
+{
+  "name": "GreenChef Recipe Book",
+  "description": "A minimalist, high-performance recipe management application built with React, Tailwind CSS, and Supabase.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
